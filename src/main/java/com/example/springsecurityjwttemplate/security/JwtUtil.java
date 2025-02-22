@@ -1,12 +1,16 @@
 package com.example.springsecurityjwttemplate.security;
-
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import io.jsonwebtoken.Jwts; // Bibliothèque pour la génération et la validation des JWT
 import io.jsonwebtoken.security.Keys; // Pour générer des clés sécurisées
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails; // Détails de l'utilisateur chargés par le service UserDetailsService
 import org.springframework.stereotype.Component; // Annotation pour marquer cette classe comme un composant Spring
 
 import javax.crypto.SecretKey; // Pour représenter une clé secrète cryptographique
+import java.util.Collection;
 import java.util.Date; // Pour gérer les dates (émission et expiration du token)
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Cette classe est un utilitaire pour la gestion des JWT (JSON Web Tokens).
@@ -27,12 +31,26 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .subject(userDetails.getUsername()) // Définit le sujet du token (nom d'utilisateur)
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
                 .issuedAt(new Date()) // Définit la date d'émission du token
                 .expiration(new Date(System.currentTimeMillis() + expiration)) // Définit la date d'expiration du token
                 .signWith(secretKey) // Signe le token avec la clé secrète
                 .compact(); // Convertit le token en une chaîne compacte
     }
+    public Collection<? extends GrantedAuthority> extractRoles(String token) {
+        var claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
 
+        List<String> roles = claims.get("roles", List.class);
+        return roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+    }
     /**
      * Extrait le nom d'utilisateur à partir d'un token JWT.
      *

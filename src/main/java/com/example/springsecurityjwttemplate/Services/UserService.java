@@ -1,7 +1,10 @@
 package com.example.springsecurityjwttemplate.Services;
 
+import com.example.springsecurityjwttemplate.model.Role;
 import com.example.springsecurityjwttemplate.model.User;
 import com.example.springsecurityjwttemplate.repositories.UserRepository;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Lazy
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -28,9 +32,13 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        for (Role role : user.getRoles()) {
+            // Utilise directement le nom du rôle de la table roles
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+            System.out.println("Rôle chargé: " + role.getName());
+
+        }
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
@@ -39,13 +47,14 @@ public class UserService implements UserDetailsService {
         );
     }
 
+
     public User register(User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
 
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            user.setRoles(List.of("ROLE_USER"));
+            user.setRoles(List.of());
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));

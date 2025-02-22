@@ -37,6 +37,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                     loginRequest.getUsername(),
                     loginRequest.getPassword()
             );
+/*
+            Ce token est ensuite passé à l'AuthenticationManager pour qu'il vérifie les identifiants en appelant la méthode loadUserByUsername de votre UserService.
+*/
             return authenticationManager.authenticate(authentication);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -46,6 +49,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException {
+/*
+        Après une authentification réussie, l'AuthenticationManager renvoie un objet Authentication qui contient le UserDetails de l'utilisateur.
+*/
         UserDetails user = (UserDetails) authResult.getPrincipal();
         String token = jwtUtil.generateToken(user);
 
