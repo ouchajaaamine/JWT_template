@@ -7,9 +7,7 @@ Les routes définies dans SecurityConfig doivent être adaptées aux endpoints d
 📌 Exemple :
 Si dans votre projet les routes ne sont pas sous /api/auth/** ou /api/products/**, vous devez les ajuster dans SecurityConfig.java :
 
-java
-Copier
-Modifier
+
 http
     .authorizeRequests()
     .antMatchers("/api/auth/**").permitAll()
@@ -25,9 +23,7 @@ Votre projet peut avoir un modèle utilisateur différent.
 📌 Exemple :
 Dans User.java, si votre nouvelle base de données stocke des emails au lieu de username, adaptez la classe :
 
-java
-Copier
-Modifier
+
 @Entity
 public class User {
     @Id
@@ -62,9 +58,7 @@ private String secret;
 private long expiration;
 Puis, dans application.properties :
 
-properties
-Copier
-Modifier
+
 jwt.secret=nouvelle_clé_très_sécurisée
 jwt.expiration=86400000  # 24 heures en millisecondes
 À faire :
@@ -84,9 +78,7 @@ Dans UserService.java, la logique de chargement et d’inscription des utilisate
 
 📌 Exemple : Si vous utilisez email au lieu de username :
 
-java
-Copier
-Modifier
+
 public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
@@ -102,9 +94,7 @@ Dans AuthController.java, adaptez les routes et la gestion des utilisateurs.
 📌 Exemple :
 Si vous ajoutez une vérification d’email avant inscription :
 
-java
-Copier
-Modifier
+
 @PostMapping("/register")
 public ResponseEntity<?> register(@RequestBody Request request) {
     if (userRepository.existsByEmail(request.getEmail())) {
