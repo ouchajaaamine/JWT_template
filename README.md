@@ -48,9 +48,7 @@ Dans JwtUtil.java, la clé secrète et la durée d'expiration doivent être modi
 
 📌 Exemple (utilisation de variables d’environnement) :
 
-java
-Copier
-Modifier
+
 @Value("${jwt.secret}")
 private String secret;
 
